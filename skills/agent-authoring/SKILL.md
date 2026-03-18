@@ -16,9 +16,9 @@ Every agent is defined in a file named `<agent-name>.soul`. The filename (minus 
 The LLM model to use. Must be a valid OpenRouter model ID.
 Examples: openai/gpt-4.1-mini, openai/gpt-4.1, google/gemini-2.5-flash, google/gemini-2.5-pro, anthropic/claude-haiku-4.5, anthropic/claude-sonnet-4, anthropic/claude-opus-4.5
 
-**SOUL <text>**
+**IDENTITY <text>**
 The agent's persona and instructions. For multi-line content, use heredoc syntax:
-  SOUL <<BLOCK
+  IDENTITY <<BLOCK
   Your multi-line persona goes here.
   BLOCK
 
@@ -35,7 +35,7 @@ A recurring scheduled task defined with natural-language timing. The timing is a
   SCHEDULE "weekdays at 9am" "send a morning briefing"
   SCHEDULE "every hour" "summarize recent activity"
 
-Schedules are managed exclusively through the .soul file. Agents can add, remove, or modify schedules at runtime using `read_soul` and `update_soul` — changes take effect immediately.
+Schedules are managed exclusively through the .soul file. Agents can add, remove, or modify schedules at runtime using `read_soul` and `edit_soul` — changes take effect immediately.
 
 **SKILL <reference>**
 Install and activate a skill. The skill's content (instructions, workflows, examples) is injected into the agent's system prompt. Skills are fetched from GitHub via skills.sh using `owner/repo@skill-name` format.
@@ -74,9 +74,9 @@ Each agent automatically has access to:
 - **Actions**: `shell`, `write_file`, `send`, `spawn_agent` — act on the environment, communicate with other agents, create sub-agents
 - **Memory**: `save_to_memory`, `search_memory` — persist and recall information across conversations
 - **Skills**: Any SKILL instructions inject additional capabilities and domain knowledge into the agent's prompt
-- **Self-modification**: `read_soul`, `update_soul`, `update_skill` — inspect and modify the agent's own configuration and skills at runtime. Changes to identity, model, conditionals, and schedules take effect immediately
+- **Self-modification**: `read_soul`, `edit_soul`, `update_skill` — inspect and modify the agent's own configuration and skills at runtime. Changes to identity, model, conditionals, and schedules take effect immediately
 
-Tailor these capabilities to the agent's specific role. Write clear SOUL text that explains *how* and *when* the agent should use each tool — good SOUL text is like a great docstring for a junior developer. A single well-augmented agent with the right tools often outperforms a multi-agent system.
+Tailor these capabilities to the agent's specific role. Write clear IDENTITY text that explains *how* and *when* the agent should use each tool — good IDENTITY text is like a great docstring for a junior developer. A single well-augmented agent with the right tools often outperforms a multi-agent system.
 
 ## Multi-Agent Workflow Patterns
 
@@ -113,7 +113,7 @@ Classify an input and direct it to a specialized agent. Each downstream agent ha
 
 **When to use**: Complex tasks with distinct categories that are better handled separately, where classification can be handled accurately.
 
-**How to build it**: Create a router agent with multiple IF/THEN rules that dispatch to the right specialist. List the routing criteria in the SOUL text.
+**How to build it**: Create a router agent with multiple IF/THEN rules that dispatch to the right specialist. List the routing criteria in the IDENTITY text.
 
 ```mermaid
 flowchart LR
@@ -159,7 +159,7 @@ A central agent dynamically breaks down tasks, delegates to worker agents, and s
 
 **When to use**: Complex tasks where you can't predict the subtasks needed ahead of time (e.g. the number and nature of files to change depends on the task).
 
-**How to build it**: Create an orchestrator agent whose SOUL instructs it to analyze the task, decompose it into subtasks, and spawn focused workers for each. Each worker gets a narrow scope and a lightweight model.
+**How to build it**: Create an orchestrator agent whose IDENTITY instructs it to analyze the task, decompose it into subtasks, and spawn focused workers for each. Each worker gets a narrow scope and a lightweight model.
 
 ```mermaid
 flowchart TD
@@ -199,7 +199,7 @@ An agent that plans and operates independently in a tool-use loop, returning to 
 
 **When to use**: Open-ended problems where the number of steps is unpredictable and you can't hardcode a fixed path. Requires trust in the agent's decision-making.
 
-**How to build it**: Give the agent clear SOUL instructions for planning and self-assessment, and appropriate MAX_ITERATIONS. Use SCHEDULE for periodic check-ins. Include explicit stopping conditions in the SOUL text.
+**How to build it**: Give the agent clear IDENTITY instructions for planning and self-assessment, and appropriate MAX_ITERATIONS. Use SCHEDULE for periodic check-ins. Include explicit stopping conditions in the IDENTITY text.
 
 ```mermaid
 flowchart TD
@@ -210,7 +210,7 @@ flowchart TD
     Agent -->|"done"| FinalResult[Final Result]
 ```
 
-**Caution**: Autonomous agents have higher costs and potential for compounding errors. Set appropriate guardrails — MAX_ITERATIONS to cap runaway loops and clear SOUL instructions about when to stop and ask for help.
+**Caution**: Autonomous agents have higher costs and potential for compounding errors. Set appropriate guardrails — MAX_ITERATIONS to cap runaway loops and clear IDENTITY instructions about when to stop and ask for help.
 
 ## Best Practices
 
@@ -218,16 +218,16 @@ Three core design principles (from Anthropic's "Building Effective Agents"):
 
 1. **Simplicity first** — Start with the simplest solution possible. A single well-prompted agent with good tools often outperforms a multi-agent system. Only increase complexity when it demonstrably improves outcomes. For many tasks, optimizing a single agent with retrieval, memory, and in-context examples is enough.
 
-2. **Transparency** — Write SOUL text that instructs agents to show their work: explain reasoning, announce routing decisions, and summarize results. The user should always understand what the agent is doing and why.
+2. **Transparency** — Write IDENTITY text that instructs agents to show their work: explain reasoning, announce routing decisions, and summarize results. The user should always understand what the agent is doing and why.
 
-3. **Agent-Computer Interface (ACI)** — Invest as much effort in tool documentation as in prompts. Write SOUL text that clearly describes when, why, and how the agent should use each tool. Include examples and edge cases. A well-documented tool interface prevents more errors than clever prompting.
+3. **Agent-Computer Interface (ACI)** — Invest as much effort in tool documentation as in prompts. Write IDENTITY text that clearly describes when, why, and how the agent should use each tool. Include examples and edge cases. A well-documented tool interface prevents more errors than clever prompting.
 
 **When describing multi-agent workflows to users, always include a mermaid diagram** showing the agent communication flow. The chat UI renders mermaid natively — just use a ```mermaid code block.
 
 Additional guidelines:
-- One clear role per agent — keep SOUL focused
+- One clear role per agent — keep IDENTITY focused
 - Use descriptive filenames (e.g. code-reviewer.soul, data-analyst.soul)
-- Use heredoc (<<BLOCK ... BLOCK) for multi-line SOUL blocks
+- Use heredoc (<<BLOCK ... BLOCK) for multi-line IDENTITY blocks
 - Chain agents with IF/THEN rules to build workflows and pipelines
 - Always search for and include relevant SKILL instructions — don't create agents without checking skills.sh first
 - ALWAYS include these two base skills in every agent you create:
