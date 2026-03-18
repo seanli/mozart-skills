@@ -4,15 +4,45 @@ description: "Retrieve content from Ragie.ai RAG platform using the retrieval AP
 
 # Ragie RAG
 
-Retrieve relevant document chunks from your Ragie.ai knowledge base. Use this when you need to answer questions or perform tasks that require information from uploaded documents, PDFs, or other content stored in Ragie.
+Retrieve relevant document chunks from your Ragie.ai knowledge base. Use this when you need to answer questions or perform tasks that require information from uploaded documents, PDFs, coding docs, API references, or other content stored in Ragie.
+
+## When to Use
+
+- User asks about content from uploaded documents, PDFs, reports, or knowledge bases
+- Questions about internal/proprietary information not available on the public web
+- Looking up coding documentation, API references, or framework guides uploaded to the knowledge base
+- Research tasks that require synthesizing information from multiple uploaded sources
+- Any question where the answer likely lives in your Ragie knowledge base
+
+## When NOT to Use
+
+- General knowledge questions already in your training data
+- Current events or live information (use web_search + web_fetch)
+- Information you already have in memory (check search_memory first)
+
+## Cross-check with your own knowledge
+
+When RAG returns coding docs, API references, or technical content, use your training knowledge as a validation layer:
+- Verify that API signatures, parameter names, and return types match what you know
+- Flag if a retrieved snippet looks outdated or contradicts well-known patterns
+- Fill in gaps — if RAG returns a partial example, complete it with your understanding
+- When RAG and your knowledge conflict, prefer RAG for project-specific conventions but prefer your training data for language/framework fundamentals
+
+## Quick Start
+
+Use the `rag_retrieve` tool directly — it handles authentication and formatting:
+
+    rag_retrieve: { query: "quarterly revenue figures", rerank: true }
+
+For advanced usage (metadata filters, partitions, document listing), use shell + curl as shown below.
 
 ## Authentication
 
 Your API key is available as `$RAGIE_API_KEY` in the environment. All requests use Bearer token auth.
 
-## Retrieving Content
+## Advanced: Retrieving Content with curl
 
-Use `shell` with `curl` to query the retrieval API. This is a POST request:
+Use `shell` with `curl` to query the retrieval API directly. This gives access to metadata filters and other advanced parameters:
 
 ```bash
 curl -s https://api.ragie.ai/retrievals \
